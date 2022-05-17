@@ -1,0 +1,163 @@
+﻿<Window x:Class="MyTimesheet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyTimesheet"
+        mc:Ignorable="d"
+        Title="My Timesheet" Height="669.276" Width="1338.609">
+    <Window.Resources>
+    </Window.Resources>
+    <DockPanel Margin="10">
+        <Expander HorizontalAlignment="Left" DockPanel.Dock="Top" Margin="10" IsExpanded="False" Header="Official Holidays">
+            <ListView Margin = "10,0,0,0"  VerticalAlignment = "Top"  x:Name = "holidayList"  ItemsSource="{Binding Source={x:Static local:Holidays.OfficialHolidays},Mode=OneTime}" d:ItemsSource="{d:SampleData ItemCount=5}" HorizontalAlignment="Stretch">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header = "Date" DisplayMemberBinding = "{Binding Date, StringFormat='{}{0:dd.MM.yyyy dddd}'}" Width = "150"/>
+
+                        <GridViewColumn Header = "Name" DisplayMemberBinding = "{Binding Name}"  Width = "300"/>
+
+                        <GridViewColumn Header = "Description" DisplayMemberBinding = "{Binding Description}"  Width = "500"/>
+                    </GridView>
+                </ListView.View>
+
+            </ListView>
+        </Expander>
+        <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="10" Orientation="Horizontal">
+            <ComboBox Name="comboBoxYear" Margin="10,10,0,10" ></ComboBox>
+            <ComboBox Name="comboBoxMonth" Margin="0,10,0,10" ></ComboBox>
+            <Button Name="btnFetch" Click="BtnFetch_Click" Margin="0,10,10,10"  >Select</Button>
+            <Button Name="btnOpenFile" Click="BtnOpenFile_Click" Margin="10" >Load from file</Button>
+        </StackPanel>
+        
+        <Grid HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="10" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
+            <Grid Grid.Row="0" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"   />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0">TimeSheet For</Label>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Name}"></TextBlock>
+                <Label Grid.Row="1" Grid.Column="0">Total Billable Hours</Label>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalHoursBillable}"></TextBlock>
+                <Label Grid.Row="2"  Grid.Column="0">Total Hours Worked</Label>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalHoursWorked, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                <Label Grid.Row="3"  Grid.Column="0">Extra Hours</Label>
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ExtraHours, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                <Label Grid.Row="4"  Grid.Column="0">Leaves taken</Label>
+                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Leaves , UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                <Label Grid.Row="5"  Grid.Column="0" Content="Time Out Today"/>
+                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding TimeOutToday , UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+
+            </Grid>
+           
+            <StackPanel Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"  Margin="10" Orientation="Horizontal" >
+                <Button Name="btnRecalculate" Click="BtnRecalculate_Click" Margin="10" >Recalculate</Button>
+                <Button Name="btnSave" Click="BtnSave_Click" Margin="10" >Save</Button>
+            </StackPanel>
+            <DataGrid Margin = "10,0,0,0" 
+                      VerticalAlignment = "Top"
+                      x:Name = "timesheetList"
+                      Grid.Row="3" ItemsSource="{Binding DailyTimeSheets,Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      AutoGenerateColumns="False"
+                      CanUserResizeColumns="True"
+                      CanUserReorderColumns="True"
+                      CanUserResizeRows="True"
+                      >
+                <DataGrid.Resources>
+
+                    <Style x:Key="DataGridColumnHeader" TargetType="{x:Type DataGridColumnHeader}">
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                                    <Grid >
+                                        <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                </DataGrid.Resources>
+
+                <DataGrid.ItemContainerStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsOfficialHoliday}" Value="False">
+                                <Setter Property="ToolTip" Value="{x:Null}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsWeekend}" Value="True">
+                                <Setter Property="FontWeight" Value="Light" />
+                                <Setter Property="Background" Value="LightGray" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsOfficialHoliday}" Value="True">
+                                <Setter Property="FontWeight" Value="Light" />
+                                <Setter Property="Background" Value="Orange" />
+                                <Setter Property="ToolTip">
+                                    <Setter.Value>
+                                        <UniformGrid Columns="1">
+                                            <TextBlock Text="{Binding Holiday.Name}"/>
+                                            <TextBlock Text="{Binding Holiday.Description}"/>
+                                        </UniformGrid>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.ItemContainerStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn IsReadOnly="True" HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Date" Binding = "{Binding Date, StringFormat='{}{0:dd.MM.yyyy dddd}'}" Width = "150" />
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Time In" Binding = "{Binding TimeIn}"  Width = "100"/>
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Time Out" Binding = "{Binding TimeOut}"  Width = "100"/>
+                  
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Break 1 Start" Binding = "{Binding Break1.BreakStart}"  Width = "100" />
+
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Break 1 End" Binding = "{Binding Break1.BreakEnd}"  Width = "100" />
+                    
+                    <DataGridTextColumn IsReadOnly="True" HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Hours Worked" Binding = "{Binding HoursWorked}"  Width = "100"/>
+                    <DataGridTextColumn IsReadOnly="True" HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Extra Hours" Binding = "{Binding ExtraHours}"  Width = "100"/>
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Break 2 Start" Binding = "{Binding Break2.BreakStart}"  Width = "100" />
+
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Break 2 End" Binding = "{Binding Break2.BreakEnd}"  Width = "100" />
+
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Break 3 Start" Binding = "{Binding Break3.BreakStart}"  Width = "100" />
+                    <DataGridTextColumn HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Break 3 End" Binding = "{Binding Break3.BreakEnd}"  Width = "100" />
+                    <DataGridTextColumn IsReadOnly="True" HeaderStyle="{StaticResource DataGridColumnHeader}" Header = "Remarks" Binding = "{Binding Remarks}"  Width = "200" />
+                </DataGrid.Columns>
+
+            </DataGrid>
+        </Grid>
+      
+    </DockPanel>
+
+</Window>
